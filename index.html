@@ -55,30 +55,58 @@
      Your browser does not support the audio element.
    </audio>
  
-   <script>
-     const targetDate = new Date();
-     targetDate.setHours(20, 30, 0, 0); // 8:30 PM local time
- 
-     function updateCountdown() {
-       const now = new Date();
-       const diff = targetDate - now;
- 
-       if (diff <= 0) {
-         document.getElementById("countdown").innerHTML = "🎉 It's Time! 🎉";
-         return;
-       }
- 
-       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-       const minutes = Math.floor((diff / (1000 * 60)) % 60);
-       const seconds = Math.floor((diff / 1000) % 60);
- 
-       document.getElementById("countdown").innerHTML =
-         `${hours}h ${minutes}m ${seconds}s`;
-     }
- 
-     setInterval(updateCountdown, 1000);
-     updateCountdown();
-   </script>
+<script>
+  let targetDate = getNextWednesdayAtTime(20, 30); // Initial target: next Wed 8:30 PM
+
+  function getNextWednesdayAtTime(hour, minute) {
+    const now = new Date();
+    const result = new Date(now);
+
+    const currentDay = now.getDay(); // 0 = Sunday, 3 = Wednesday
+    let daysUntilWednesday = (3 - currentDay + 7) % 7;
+
+    result.setDate(now.getDate() + daysUntilWednesday);
+    result.setHours(hour, minute, 0, 0);
+
+    // If it's already past target time today, move to next week's Wednesday
+    if (daysUntilWednesday === 0 && now > result) {
+      result.setDate(result.getDate() + 7);
+    }
+
+    return result;
+  }
+
+  function updateCountdown() {
+    const now = new Date();
+
+    // At or after Wednesday 11:00 PM, shift to next week's Wednesday
+    const resetTime = new Date(targetDate);
+    resetTime.setHours(23, 0, 0, 0); // Wednesday at 11:00 PM
+
+    if (now >= resetTime && now.getDay() === 3) {
+      // Move to next week's Wednesday 8:30 PM
+      targetDate.setDate(targetDate.getDate() + 7);
+    }
+
+    const diff = targetDate - now;
+
+    if (diff <= 0) {
+      document.getElementById("countdown").innerHTML = "🎉 It's Time! 🎉";
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    document.getElementById("countdown").innerHTML =
+      `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  setInterval(updateCountdown, 1000);
+  updateCountdown();
+</script>
  
  </body>
  </html>
