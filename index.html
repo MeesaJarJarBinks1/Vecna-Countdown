@@ -44,9 +44,8 @@
       transform: translate(-50%, -50%);
       max-width: 80%;
       max-height: 80%;
-      z-index: 1000;
-      border: 5px solid white;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      z-index: 10;
+      box-shadow: 0 0 40px black;
     }
 
     audio {
@@ -63,43 +62,33 @@
     <div id="countdown">Loading...</div>
   </div>
 
-  <img id="its-time-image" src="https://res.cloudinary.com/dfpklrvth/image/upload/v1745377299/GroupPhoto1_kjkrlh.png" alt="It's Time!" />
+  <img id="its-time-image" src="https://res.cloudinary.com/dfpklrvth/image/upload/v1745946234/its-time_r3btqh.png" alt="It’s time!">
 
   <audio controls autoplay loop>
     <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
     Your browser does not support the audio element.
   </audio>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
   <script>
-    let targetDate = getNextWednesdayAtTime(20, 30);
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "XXXXXX",
+      appId: "XXXXXX"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    function getNextWednesdayAtTime(hour, minute) {
+    function updateCountdown(targetDate) {
       const now = new Date();
-      const result = new Date(now);
-
-      const currentDay = now.getDay();
-      let daysUntilWednesday = (3 - currentDay + 7) % 7;
-
-      result.setDate(now.getDate() + daysUntilWednesday);
-      result.setHours(hour, minute, 0, 0);
-
-      if (daysUntilWednesday === 0 && now > result) {
-        result.setDate(result.getDate() + 7);
-      }
-
-      return result;
-    }
-
-    function updateCountdown() {
-      const now = new Date();
-      const resetTime = new Date(targetDate);
-      resetTime.setHours(23, 0, 0, 0);
-
-      if (now >= resetTime && now.getDay() === 3) {
-        targetDate.setDate(targetDate.getDate() + 7);
-      }
-
-      const diff = targetDate - now;
+      const diff = new Date(targetDate) - now;
 
       if (diff <= 0) {
         document.getElementById("countdown").innerHTML = "🎉 It's Time! 🎉";
@@ -116,8 +105,14 @@
         `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
 
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+    firebase.database().ref('countdownTarget').on('value', (snapshot) => {
+      const targetDate = snapshot.val();
+      if (!targetDate) {
+        document.getElementById("countdown").innerHTML = "⏳ No countdown set.";
+        return;
+      }
+      setInterval(() => updateCountdown(targetDate), 1000);
+    });
   </script>
 
 </body>
