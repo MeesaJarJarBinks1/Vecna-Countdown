@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Set Countdown Time</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    input, button {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Set Countdown Date & Time</h1>
+  <input type="datetime-local" id="datetime" />
+  <button onclick="saveDate()">Set Countdown</button>
+  <p id="status"></p>
+
+<script>
+  function saveDate() {
+    const datetime = document.getElementById('datetime').value;
+    if (!datetime) {
+      document.getElementById('status').innerText = 'Please enter a valid date and time.';
+      return;
+    }
+
+    const date = new Date(datetime);
+    if (isNaN(date)) {
+      document.getElementById('status').innerText = 'Invalid date.';
+      return;
+    }
+
+    localStorage.setItem('countdownTarget', date.toISOString());
+    document.getElementById('status').innerText = '✅ Countdown time saved!';
+  }
+</script>
+
+</body>
+</html>
