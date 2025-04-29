@@ -2,54 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, height=device-height" />
+  <meta name="viewport" content="width=1366, height=768" />
   <title>Set Countdown Time</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Libre Baskerville', serif;
-      color: white;
-      background-color: #000;
-      padding: 50px;
+      background-color: #111;
+      color: #eee;
+      padding: 40px;
       text-align: center;
     }
-
-    input[type="datetime-local"] {
+    input, button {
       font-size: 1.2em;
-      margin-bottom: 20px;
+      margin: 10px;
       padding: 10px;
     }
-
-    button {
-      font-size: 1.5em;
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: #333;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-
-    button:hover {
-      background-color: #555;
+    #current-setting {
+      margin-top: 20px;
+      font-size: 1.1em;
+      color: #8f8;
     }
   </style>
 </head>
 <body>
 
   <h1>Set Countdown Time</h1>
-  <form id="set-time-form">
-    <label for="target-date">Choose Date and Time:</label><br>
-    <input type="datetime-local" id="target-date" required>
-    <br><br>
-    <button type="submit">Set Countdown</button>
-  </form>
+  <p>Enter a date and time (in your local time):</p>
+  <input type="datetime-local" id="datetime-input" />
+  <button onclick="setCountdown()">Set Countdown</button>
 
+  <div id="current-setting">Loading current setting...</div>
+
+  <!-- Firebase setup and database interaction -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-    // Firebase config from your Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
@@ -60,26 +49,47 @@
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Event listener for form submission
-    document.getElementById("set-time-form").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent form from refreshing the page
-      const targetDate = new Date(document.getElementById("target-date").value);
-      const targetDateString = targetDate.toISOString(); // Convert to ISO string
+    const currentDisplay = document.getElementById("current-setting");
 
-      // Save the new countdown target to Firebase
-      const countdownRef = ref(db, 'countdownTarget');
-      set(countdownRef, targetDateString)
+    function loadCurrentCountdown() {
+      const dbRef = ref(db);
+      get(child(dbRef, "countdownTarget")).then((snapshot) => {
+        if (snapshot.exists()) {
+          const value = snapshot.val();
+          const localDate = new Date(value);
+          currentDisplay.textContent = "Current countdown target: " + localDate.toLocaleString();
+        } else {
+          currentDisplay.textContent = "No countdown time is currently set.";
+        }
+      }).catch((error) => {
+        console.error(error);
+        currentDisplay.textContent = "Error loading current setting.";
+      });
+    }
+
+    function setCountdown() {
+      const input = document.getElementById("datetime-input").value;
+      if (!input) return alert("Please enter a date and time.");
+
+      const targetDate = new Date(input);
+      const isoString = targetDate.toISOString();
+
+      set(ref(db, "countdownTarget"), isoString)
         .then(() => {
-          alert("Countdown set successfully!");
+          alert("Countdown time updated!");
+          loadCurrentCountdown(); // refresh display
         })
         .catch((error) => {
-          console.error("Error setting countdown:", error);
+          console.error(error);
+          alert("Failed to update countdown.");
         });
-    });
+    }
+
+    // Load on startup
+    loadCurrentCountdown();
   </script>
 
 </body>
