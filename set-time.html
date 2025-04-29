@@ -28,24 +28,40 @@
   <button onclick="saveDate()">Set Countdown</button>
   <p id="status"></p>
 
-<script>
-  function saveDate() {
-    const datetime = document.getElementById('datetime').value;
-    if (!datetime) {
-      document.getElementById('status').innerText = 'Please enter a valid date and time.';
-      return;
-    }
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
-    const date = new Date(datetime);
-    if (isNaN(date)) {
-      document.getElementById('status').innerText = 'Invalid date.';
-      return;
-    }
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "XXXXXX",
+      appId: "XXXXXX"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    localStorage.setItem('countdownTarget', date.toISOString());
-    document.getElementById('status').innerText = '✅ Countdown time saved!';
-  }
-</script>
+    function saveDate() {
+      const datetime = document.getElementById('datetime').value;
+      if (!datetime) {
+        document.getElementById('status').innerText = 'Please enter a valid date and time.';
+        return;
+      }
+
+      const date = new Date(datetime);
+      if (isNaN(date)) {
+        document.getElementById('status').innerText = 'Invalid date.';
+        return;
+      }
+
+      db.ref('countdownTarget').set(date.toISOString());
+      document.getElementById('status').innerText = '✅ Countdown time saved!';
+    }
+  </script>
 
 </body>
 </html>
