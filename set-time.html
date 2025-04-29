@@ -36,8 +36,8 @@
 
   <!-- Firebase setup and database interaction -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js?cachebust=3";
-    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js?cachebust=3";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js?cachebust=4";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js?cachebust=4";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
@@ -73,10 +73,10 @@
     function setCountdown() {
       const input = document.getElementById("datetime-input").value;
       if (!input) return alert("Please enter a date and time.");
-    
+
       const targetDate = new Date(input);
       const isoString = targetDate.toISOString();
-    
+
       set(ref(db, "countdownTarget"), isoString)
         .then(() => {
           alert("Countdown time updated to " + targetDate.toLocaleString() + "!");
@@ -88,7 +88,7 @@
         });
     }
 
-    // Load current time on startup
+    // Load current setting when page opens
     loadCurrentCountdown();
   </script>
 
