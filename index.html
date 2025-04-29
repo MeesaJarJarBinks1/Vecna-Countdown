@@ -2,14 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1366, height=768"/>
+  <meta name="viewport" content="width=device-width, height=device-height" />
   <title>Eve of Ruin Countdown</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js"></script>
-
   <style>
     html, body {
       margin: 0;
@@ -46,25 +41,6 @@
       bottom: 20px;
       left: 40px;
     }
-
-    #its-time {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3em;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 20px;
-      border-radius: 20px;
-      text-align: center;
-    }
-
-    #its-time img {
-      margin-top: 20px;
-      width: 300px;
-      max-width: 80%;
-    }
   </style>
 </head>
 <body>
@@ -74,17 +50,17 @@
     <div id="countdown">Loading...</div>
   </div>
 
-  <div id="its-time">
-    🎉 It's Time! 🎉<br>
-    <img src="https://res.cloudinary.com/dfpklrvth/image/upload/v1745878663/ItsTimeVecnaGroup_cake.png" alt="It's Time Image">
-  </div>
-
   <audio controls autoplay loop>
     <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
     Your browser does not support the audio element.
   </audio>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    // Firebase config from your Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
@@ -95,41 +71,34 @@
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    let targetDate = null;
-
-    db.ref('countdownTarget').on('value', (snapshot) => {
-      const value = snapshot.val();
-      if (value) {
-        targetDate = new Date(value);
-        updateCountdown();
-      }
-    });
-
-    function updateCountdown() {
-      if (!targetDate) return;
-
-      const now = new Date();
-      const diff = targetDate - now;
-
-      if (diff <= 0) {
-        document.getElementById("countdown-container").style.display = "none";
-        document.getElementById("its-time").style.display = "block";
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      document.getElementById("countdown").innerText =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    // Function to update countdown
+    function updateCountdown(targetDate) {
+      setInterval(() => {
+        const now = new Date();
+        const diff = targetDate - now;
+        if (diff <= 0) {
+          document.getElementById("countdown").innerText = "🎉 It's Time! 🎉";
+        } else {
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((diff / (1000 * 60)) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
+          document.getElementById("countdown").innerText =
+            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+      }, 1000);
     }
 
-    setInterval(updateCountdown, 1000);
-  </script>
-</body>
-</html>
+    // Retrieve the countdown target from Firebase
+    const countdownRef = ref(db, 'countdownTarget');
+    onValue(countdownRef, (snapshot) => {
+      const countdownValue = snapshot.val();
+      if (countdownValue) {
+        const targetDate = new Date(countdownValue); // Convert the string to Date object
+        updateCountdown(targetDate); // Start countdown
+      } else {
+        document.getElementById("countdown").innerText = "No countdown set
