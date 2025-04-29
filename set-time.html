@@ -36,15 +36,15 @@
 
   <!-- Firebase setup and database interaction -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js?cachebust=3";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js?cachebust=3";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
       databaseURL: "https://vecna-countdown-default-rtdb.firebaseio.com",
       projectId: "vecna-countdown",
-      storageBucket: "vecna-countdown.firebasestorage.app",
+      storageBucket: "vecna-countdown.appspot.com",
       messagingSenderId: "205413099900",
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
@@ -77,12 +77,10 @@
       const targetDate = new Date(input);
       const isoString = targetDate.toISOString();
     
-      console.log("Setting countdownTarget to:", isoString); // Debug line
-    
       set(ref(db, "countdownTarget"), isoString)
         .then(() => {
-          alert("Countdown time updated to " + isoString + "!");
-          loadCurrentCountdown(); // refresh display
+          alert("Countdown time updated to " + targetDate.toLocaleString() + "!");
+          currentDisplay.textContent = "Current countdown target: " + targetDate.toLocaleString();
         })
         .catch((error) => {
           console.error(error);
@@ -90,8 +88,7 @@
         });
     }
 
-
-    // Load on startup
+    // Load current time on startup
     loadCurrentCountdown();
   </script>
 
