@@ -33,6 +33,12 @@
     button:hover {
       background-color: #555;
     }
+
+    #current-setting {
+      margin-top: 30px;
+      font-size: 1.2em;
+      color: #8f8;
+    }
   </style>
 </head>
 <body>
@@ -45,11 +51,12 @@
     <button type="submit">Set Countdown</button>
   </form>
 
+  <div id="current-setting">Loading current setting...</div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-    // Firebase config from your Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
@@ -60,26 +67,47 @@
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const display = document.getElementById("current-setting");
 
-    // Event listener for form submission
+    function loadCurrentCountdown() {
+      const dbRef = ref(db);
+      get(child(dbRef, 'countdownTarget'))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const value = snapshot.val();
+            const localTime = new Date(value);
+            display.textContent = "Current countdown target: " + localTime.toLocaleString();
+          } else {
+            display.textContent = "No countdown time is currently set.";
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading current countdown:", error);
+          display.textContent = "Error loading current setting.";
+        });
+    }
+
     document.getElementById("set-time-form").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent form from refreshing the page
+      event.preventDefault();
       const targetDate = new Date(document.getElementById("target-date").value);
-      const targetDateString = targetDate.toISOString(); // Convert to ISO string
-
-      // Save the new countdown target to Firebase
+      const isoString = targetDate.toISOString();
       const countdownRef = ref(db, 'countdownTarget');
-      set(countdownRef, targetDateString)
+
+      set(countdownRef, isoString)
         .then(() => {
           alert("Countdown set successfully!");
+          loadCurrentCountdown();
         })
         .catch((error) => {
           console.error("Error setting countdown:", error);
+          alert("Failed to update countdown.");
         });
     });
+
+    // Display the current countdown time on page load
+    loadCurrentCountdown();
   </script>
 
 </body>
