@@ -1,42 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, height=device-height" />
   <title>Set Countdown Time</title>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background: #111;
+      font-family: 'Libre Baskerville', serif;
       color: white;
+      background-color: #000;
+      padding: 50px;
+      text-align: center;
     }
-    input, button {
+
+    input[type="datetime-local"] {
       font-size: 1.2em;
-      margin: 10px 0;
+      margin-bottom: 20px;
+      padding: 10px;
     }
+
     button {
+      font-size: 1.5em;
       padding: 10px 20px;
-      background: #4caf50;
-      border: none;
-      color: white;
       cursor: pointer;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
 
-  <h1>Set New Countdown Time</h1>
-  <label for="datetime">Choose Date and Time:</label><br>
-  <input type="datetime-local" id="datetime"><br>
-  <button onclick="setCountdown()">Set Countdown</button>
-  <p id="status"></p>
+  <h1>Set Countdown Time</h1>
+  <form id="set-time-form">
+    <label for="target-date">Choose Date and Time:</label><br>
+    <input type="datetime-local" id="target-date" required>
+    <br><br>
+    <button type="submit">Set Countdown</button>
+  </form>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    // Firebase config from your Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
@@ -47,22 +60,27 @@
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    function setCountdown() {
-      const input = document.getElementById("datetime").value;
-      const status = document.getElementById("status");
+    // Event listener for form submission
+    document.getElementById("set-time-form").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent form from refreshing the page
+      const targetDate = new Date(document.getElementById("target-date").value);
+      const targetDateString = targetDate.toISOString(); // Convert to ISO string
 
-      if (!input) {
-        status.innerText = "Please select a date and time.";
-        return;
-      }
-
-      const newDate = new Date(input);
-      db.ref('countdownTarget').set(newDate.toISOString());
-      status.innerText = "Countdown updated!";
-    }
+      // Save the new countdown target to Firebase
+      const countdownRef = ref(db, 'countdownTarget');
+      set(countdownRef, targetDateString)
+        .then(() => {
+          alert("Countdown set successfully!");
+        })
+        .catch((error) => {
+          console.error("Error setting countdown:", error);
+        });
+    });
   </script>
+
 </body>
 </html>
