@@ -1,67 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Set Countdown Time</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
+      padding: 30px;
       background: #111;
       color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
     }
-
     input, button {
-      margin: 0.5rem;
-      padding: 0.5rem;
-      font-size: 1.2rem;
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      background: #4caf50;
+      border: none;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <h1>Set Countdown Date & Time</h1>
-  <input type="datetime-local" id="datetime" />
-  <button onclick="saveDate()">Set Countdown</button>
+  <h1>Set New Countdown Time</h1>
+  <label for="datetime">Choose Date and Time:</label><br>
+  <input type="datetime-local" id="datetime"><br>
+  <button onclick="setCountdown()">Set Countdown</button>
   <p id="status"></p>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "XXXXXX",
-      appId: "XXXXXX"
+      apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
+      authDomain: "vecna-countdown.firebaseapp.com",
+      databaseURL: "https://vecna-countdown-default-rtdb.firebaseio.com",
+      projectId: "vecna-countdown",
+      storageBucket: "vecna-countdown.firebasestorage.app",
+      messagingSenderId: "205413099900",
+      appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function saveDate() {
-      const datetime = document.getElementById('datetime').value;
-      if (!datetime) {
-        document.getElementById('status').innerText = 'Please enter a valid date and time.';
+    function setCountdown() {
+      const input = document.getElementById("datetime").value;
+      const status = document.getElementById("status");
+
+      if (!input) {
+        status.innerText = "Please select a date and time.";
         return;
       }
 
-      const date = new Date(datetime);
-      if (isNaN(date)) {
-        document.getElementById('status').innerText = 'Invalid date.';
-        return;
-      }
-
-      db.ref('countdownTarget').set(date.toISOString());
-      document.getElementById('status').innerText = '✅ Countdown time saved!';
+      const newDate = new Date(input);
+      db.ref('countdownTarget').set(newDate.toISOString());
+      status.innerText = "Countdown updated!";
     }
   </script>
-
 </body>
 </html>
