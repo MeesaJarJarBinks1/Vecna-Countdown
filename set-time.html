@@ -73,13 +73,15 @@
     function setCountdown() {
       const input = document.getElementById("datetime-input").value;
       if (!input) return alert("Please enter a date and time.");
-
+    
       const targetDate = new Date(input);
       const isoString = targetDate.toISOString();
-
+    
+      console.log("Setting countdownTarget to:", isoString); // Debug line
+    
       set(ref(db, "countdownTarget"), isoString)
         .then(() => {
-          alert("Countdown time updated!");
+          alert("Countdown time updated to " + isoString + "!");
           loadCurrentCountdown(); // refresh display
         })
         .catch((error) => {
@@ -87,6 +89,7 @@
           alert("Failed to update countdown.");
         });
     }
+
 
     // Load on startup
     loadCurrentCountdown();
