@@ -31,7 +31,7 @@
       text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
     }
 
-    #its-time-image {
+    #its-time-video {
       display: none;
       position: fixed;
       top: 50%;
@@ -63,7 +63,11 @@
     <div id="countdown">Loading...</div>
   </div>
 
-  <img id="its-time-image" src="https://res.cloudinary.com/dfpklrvth/image/upload/v1745377299/GroupPhoto1_kjkrlh.png" alt="It's Time!" />
+  <!-- Replaces the old image with this video -->
+  <video id="its-time-video" autoplay controls>
+    <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1746058873/full_video_idscuh.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
   <audio controls autoplay loop>
     <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
@@ -75,7 +79,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-    // Firebase config from your Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
       authDomain: "vecna-countdown.firebaseapp.com",
@@ -86,18 +89,18 @@
       appId: "1:205413099900:web:eac7b7ea0c1a800e489cf9"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Function to update countdown
     function updateCountdown(targetDate) {
       setInterval(() => {
         const now = new Date();
         const diff = targetDate - now;
         if (diff <= 0) {
           document.getElementById("countdown").innerText = "🎉 It's Time! 🎉";
-          document.getElementById("its-time-image").style.display = "block";
+          const video = document.getElementById("its-time-video");
+          video.style.display = "block";
+          video.play();
         } else {
           const days = Math.floor(diff / (1000 * 60 * 60 * 24));
           const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -109,13 +112,12 @@
       }, 1000);
     }
 
-    // Retrieve the countdown target from Firebase
     const countdownRef = ref(db, 'countdownTarget');
     onValue(countdownRef, (snapshot) => {
       const countdownValue = snapshot.val();
       if (countdownValue) {
-        const targetDate = new Date(countdownValue); // Convert the string to Date object
-        updateCountdown(targetDate); // Start countdown
+        const targetDate = new Date(countdownValue);
+        updateCountdown(targetDate);
       } else {
         document.getElementById("countdown").innerText = "No countdown set.";
       }
