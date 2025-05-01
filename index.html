@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, height=device-height" />
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
   <title>Eve of Ruin Countdown</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
   <style>
@@ -31,22 +31,44 @@
       text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
     }
 
-    #its-time-video {
+    #countdown {
+      font-size: 2.8em;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    #its-time-container {
       display: none;
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      max-width: 80%;
-      max-height: 80%;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
       z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #its-time-video {
+      max-width: 90%;
+      max-height: 80vh;
       border: 5px solid white;
       box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     }
 
-    #countdown {
-      font-size: 2.8em;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+    #close-video-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      border: none;
+      padding: 10px 15px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border-radius: 5px;
+      z-index: 1001;
     }
 
     audio {
@@ -63,11 +85,14 @@
     <div id="countdown">Loading...</div>
   </div>
 
-  <!-- Replaces the old image with this video -->
-  <video id="its-time-video" autoplay controls>
-    <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1746058873/full_video_idscuh.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <!-- Video overlay container -->
+  <div id="its-time-container">
+    <button id="close-video-btn">Close</button>
+    <video id="its-time-video" autoplay controls>
+      <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1746058873/full_video_idscuh.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
 
   <audio controls autoplay loop>
     <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
@@ -93,13 +118,15 @@
     const db = getDatabase(app);
 
     function updateCountdown(targetDate) {
-      setInterval(() => {
+      const interval = setInterval(() => {
         const now = new Date();
         const diff = targetDate - now;
         if (diff <= 0) {
+          clearInterval(interval);
           document.getElementById("countdown").innerText = "🎉 It's Time! 🎉";
+          const container = document.getElementById("its-time-container");
           const video = document.getElementById("its-time-video");
-          video.style.display = "block";
+          container.style.display = "flex";
           video.play();
         } else {
           const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -111,6 +138,14 @@
         }
       }, 1000);
     }
+
+    document.getElementById("close-video-btn").addEventListener("click", () => {
+      const container = document.getElementById("its-time-container");
+      const video = document.getElementById("its-time-video");
+      container.style.display = "none";
+      video.pause();
+      video.currentTime = 0;
+    });
 
     const countdownRef = ref(db, 'countdownTarget');
     onValue(countdownRef, (snapshot) => {
