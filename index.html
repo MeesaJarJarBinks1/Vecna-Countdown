@@ -4,19 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
   <title>Eve of Ruin Countdown</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;    
-      background-color: black;
-      background: url('https://res.cloudinary.com/dfpklrvth/image/upload/v1778123037/Lucan_dan_Siphidri_channels_Thors_little_brother__r0lozb.png') no-repeat center center;
-      background-size: cover;
+      height: 100%;
+      overflow: hidden;
       font-family: 'Libre Baskerville', serif;
       color: white;
-      overflow: auto;
+      background-color: black;
+    }
+
+    /* Background slideshow layers */
+    .background-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      transition: opacity 2s ease-in-out;
+      z-index: 0;
+    }
+    
+    /* Desktop */
+    .background-layer {
+      background-size: cover;
+    }
+    
+    /* Phones */
+    @media (max-width: 768px) {    
+      .background-layer {    
+        background-size: 100% auto;
+        background-position: center top;    
+      }    
+    }
+    
+    #bg1 {
+      opacity: 1;
+    }
+
+    #bg2 {
+      opacity: 0;
     }
 
     #countdown-container {
@@ -24,27 +59,26 @@
       left: 60px;
       bottom: 80px;
       text-align: center;
+      z-index: 10;
     }
 
     #countdown-label {
       font-size: 1.5em;
       margin-bottom: 10px;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
     }
 
     #countdown {
       font-size: 2.8em;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
     }
 
+    /* Video overlay */
     #its-time-container {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
+      inset: 0;
+      background: rgba(0,0,0,0.92);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -55,20 +89,20 @@
       max-width: 90%;
       max-height: 80vh;
       border: 5px solid white;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
     }
 
     #close-video-btn {
       position: absolute;
       top: 20px;
       right: 30px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255,255,255,0.85);
       color: black;
       border: none;
-      padding: 10px 15px;
-      font-size: 1.2em;
+      padding: 10px 16px;
+      font-size: 1.1em;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 6px;
       z-index: 1001;
     }
 
@@ -76,34 +110,48 @@
       position: absolute;
       bottom: 20px;
       left: 40px;
+      z-index: 10;
     }
   </style>
 </head>
+
 <body>
 
+  <!-- Background slideshow layers -->
+  <div id="bg1" class="background-layer"></div>
+  <div id="bg2" class="background-layer"></div>
+
+  <!-- Countdown -->
   <div id="countdown-container">
     <div id="countdown-label">Official Countdown</div>
     <div id="countdown">Loading...</div>
   </div>
 
-  <!-- Video overlay container -->
+  <!-- Video overlay -->
   <div id="its-time-container">
     <button id="close-video-btn">Close</button>
-    <video id="its-time-video" autoplay controls>
-      <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1746058873/full_video_idscuh.mp4" type="video/mp4">
+
+    <video id="its-time-video" autoplay controls playsinline>
+      <source src="https://res.cloudinary.com/dfpklrvth/video/upload/f_auto,q_auto/v1746058873/full_video_idscuh.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
   </div>
 
-  <audio controls autoplay loop>
-    <source src="https://res.cloudinary.com/dfpklrvth/video/upload/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
+  <!-- Background Music -->
+  <audio id="background-audio" controls autoplay loop>
+    <source src="https://res.cloudinary.com/dfpklrvth/video/upload/f_auto,q_auto/v1744830663/Whispers_of_Ruin_b3yxes.m4a" type="audio/mp4">
     Your browser does not support the audio element.
   </audio>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    /* ------------------------------
+       FIREBASE CONFIG
+    ------------------------------ */
 
     const firebaseConfig = {
       apiKey: "AIzaSyDxKJwdoXwXG-Kpsh0dGnLBwG-TTO01E1A",
@@ -118,48 +166,207 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    /* ------------------------------
+       BACKGROUND SLIDESHOW
+    ------------------------------ */
+
+    // Cloudinary optimized images
+    const backgroundImages = [
+
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1744831718/Slide1_z3p0ke.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1778123037/Lucan_dan_Siphidri_channels_Thors_little_brother__r0lozb.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1745377299/GroupPhoto1_kjkrlh.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1744840082/Vecna4b_bgq5f7.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1778710037/Star_Angler_fjfjaj.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1778710038/DragonSnake_nrrq2o.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1778710038/DnD_Painting_cravwy.png",
+      "https://res.cloudinary.com/dfpklrvth/image/upload/f_auto,q_auto/v1778710037/the-lambent-zenith_k7h6a6.jpg"  
+
+    ];
+
+    backgroundImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+
+    // Shuffle images randomly
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    shuffleArray(backgroundImages);
+
+    const bg1 = document.getElementById("bg1");
+    const bg2 = document.getElementById("bg2");
+
+    let currentImageIndex = 0;
+    let activeLayer = 1;
+
+    bg1.style.backgroundImage = `url('${backgroundImages[0]}')`;
+
+    let slideshowInterval;
+
+    function startSlideshow() {
+
+      slideshowInterval = setInterval(() => {
+
+        currentImageIndex =
+          (currentImageIndex + 1) % backgroundImages.length;
+
+        const nextImage =
+          backgroundImages[currentImageIndex];
+
+        if (activeLayer === 1) {
+
+          bg2.style.backgroundImage = `url('${nextImage}')`;
+          bg2.style.opacity = 1;
+          bg1.style.opacity = 0;
+
+          activeLayer = 2;
+
+        } else {
+
+          bg1.style.backgroundImage = `url('${nextImage}')`;
+          bg1.style.opacity = 1;
+          bg2.style.opacity = 0;
+
+          activeLayer = 1;
+        }
+
+      }, 10000); // every 10 seconds
+    }
+
+    function stopSlideshow() {
+      clearInterval(slideshowInterval);
+    }
+
+    startSlideshow();
+
+    /* ------------------------------
+       VIDEO + AUDIO
+    ------------------------------ */
+
+    const videoContainer =
+      document.getElementById("its-time-container");
+
+    const video =
+      document.getElementById("its-time-video");
+
+    const audio =
+      document.getElementById("background-audio");
+
+    // Close video button
+    document.getElementById("close-video-btn")
+      .addEventListener("click", () => {
+
+        video.pause();
+        video.currentTime = 0;
+
+        videoContainer.style.display = "none";
+
+        // Resume slideshow
+        startSlideshow();
+
+        // Resume music
+        audio.play();
+
+      });
+
+    /* ------------------------------
+       COUNTDOWN
+    ------------------------------ */
+
     function updateCountdown(targetDate) {
+
       const interval = setInterval(() => {
+
         const now = new Date();
         const diff = targetDate - now;
+
         if (diff <= 0) {
+
           clearInterval(interval);
-          document.getElementById("countdown").innerText = "🎉 It's Time! 🎉";
-          const container = document.getElementById("its-time-container");
-          const video = document.getElementById("its-time-video");
-          container.style.display = "flex";
+
+          document.getElementById("countdown").innerText =
+            "🎉 It's Time! 🎉";
+
+          // Pause slideshow
+          stopSlideshow();
+
+          // Pause music
+          audio.pause();
+
+          // Show video
+          videoContainer.style.display = "flex";
+
           video.play();
+
         } else {
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-          const minutes = Math.floor((diff / (1000 * 60)) % 60);
-          const seconds = Math.floor((diff / 1000) % 60);
+
+          const days =
+            Math.floor(diff / (1000 * 60 * 60 * 24));
+
+          const hours =
+            Math.floor((diff / (1000 * 60 * 60)) % 24);
+
+          const minutes =
+            Math.floor((diff / (1000 * 60)) % 60);
+
+          const seconds =
+            Math.floor((diff / 1000) % 60);
+
           document.getElementById("countdown").innerText =
             `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
+
       }, 1000);
     }
 
-    document.getElementById("close-video-btn").addEventListener("click", () => {
-      const container = document.getElementById("its-time-container");
-      const video = document.getElementById("its-time-video");
-      container.style.display = "none";
-      video.pause();
-      video.currentTime = 0;
-    });
+    /* ------------------------------
+       FIREBASE COUNTDOWN
+    ------------------------------ */
 
     const countdownRef = ref(db, 'countdownTarget');
+
     onValue(countdownRef, (snapshot) => {
+
       const countdownValue = snapshot.val();
+
       if (countdownValue) {
+
         const targetDate = new Date(countdownValue);
+
         updateCountdown(targetDate);
+
       } else {
-        document.getElementById("countdown").innerText = "No countdown set.";
+
+        document.getElementById("countdown").innerText =
+          "No countdown set.";
       }
     });
+
+    /* ------------------------------
+       TEST MODE
+       Uncomment this block to test
+       without changing Firebase date
+    ------------------------------ */
+
+    /*
+    setTimeout(() => {
+
+      stopSlideshow();
+      audio.pause();
+
+      videoContainer.style.display = "flex";
+      video.play();
+
+    }, 5000);
+    */
+
   </script>
 
 </body>
 </html>
-
